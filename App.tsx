@@ -5,34 +5,28 @@
  * @format
  */
 
-import React, {useCallback} from 'react';
+import React, {useCallback, useState} from 'react';
 import {
   Button,
   SafeAreaView,
-  ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
   useWindowDimensions,
-  View,
 } from 'react-native';
 import Animated, {
-  Easing,
+  FadeIn,
+  FadeInUp,
+  FadeOut,
+  FadeOutDown,
   interpolate,
   interpolateColor,
   useAnimatedRef,
   useAnimatedStyle,
   useDerivedValue,
-  useFrameCallback,
   useScrollViewOffset,
-  useSharedValue,
-  withClamp,
-  withDelay,
-  withRepeat,
-  withSequence,
   withSpring,
-  withTiming,
 } from 'react-native-reanimated';
 import {LoremIpsum} from './LoremIpsum';
 
@@ -43,46 +37,21 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? 'black' : 'white',
   };
 
-  const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
-
-  const scrollViewOffset = useScrollViewOffset(scrollViewRef);
-
-  const {height: deviceHeight} = useWindowDimensions();
-
-  const scrollAnimProgress = useDerivedValue(() => {
-    return withSpring(interpolate(scrollViewOffset.value, [0, 200], [0, 1]));
-  }, []);
-
-  const headerAnimation = useAnimatedStyle(() => {
-    return {
-      height: interpolate(
-        scrollAnimProgress.value,
-        [0, 1],
-        [deviceHeight * 0.2, 50],
-        'clamp',
-      ),
-      backgroundColor: interpolateColor(
-        scrollAnimProgress.value,
-        [0, 1],
-        ['black', 'darkred'],
-      ),
-    };
-  });
+  const [visible, setVisible] = useState(false);
 
   return (
     <SafeAreaView style={[backgroundStyle, styles.root]}>
-      <StatusBar
-        barStyle={isDarkMode ? 'light-content' : 'dark-content'}
-        backgroundColor={backgroundStyle.backgroundColor}
+      <Button
+        onPress={useCallback(() => setVisible(value => !value), [])}
+        title="Toggle"
       />
-      <Animated.View style={[styles.header, headerAnimation]}>
-        <Text style={[styles.headerText]}>Header Text</Text>
-      </Animated.View>
-      <Animated.ScrollView
-        ref={scrollViewRef}
-        contentContainerStyle={styles.main}>
-        <LoremIpsum />
-      </Animated.ScrollView>
+      {visible ? (
+        <Animated.View
+          entering={FadeInUp.duration(500)}
+          exiting={FadeOutDown.duration(2000)}
+          style={styles.box}
+        />
+      ) : null}
     </SafeAreaView>
   );
 }
@@ -93,6 +62,14 @@ const styles = StyleSheet.create({
   main: {
     paddingVertical: 12,
     paddingHorizontal: 20,
+  },
+  box: {
+    margin: 20,
+    width: 100,
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: 'red',
+    alignSelf: 'center',
   },
   root: {
     flex: 1,
