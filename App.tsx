@@ -5,114 +5,69 @@
  * @format
  */
 
-import React from 'react';
-import type {PropsWithChildren} from 'react';
+import React, {useCallback} from 'react';
 import {
+  Button,
   SafeAreaView,
   ScrollView,
   StatusBar,
   StyleSheet,
   Text,
   useColorScheme,
+  useWindowDimensions,
   View,
 } from 'react-native';
-
-import {
-  Colors,
-  DebugInstructions,
-  Header,
-  LearnMoreLinks,
-  ReloadInstructions,
-} from 'react-native/Libraries/NewAppScreen';
-
-type SectionProps = PropsWithChildren<{
-  title: string;
-}>;
-
-function Section({children, title}: SectionProps): React.JSX.Element {
-  const isDarkMode = useColorScheme() === 'dark';
-  return (
-    <View style={styles.sectionContainer}>
-      <Text
-        style={[
-          styles.sectionTitle,
-          {
-            color: isDarkMode ? Colors.white : Colors.black,
-          },
-        ]}>
-        {title}
-      </Text>
-      <Text
-        style={[
-          styles.sectionDescription,
-          {
-            color: isDarkMode ? Colors.light : Colors.dark,
-          },
-        ]}>
-        {children}
-      </Text>
-    </View>
-  );
-}
+import Animated, {useSharedValue} from 'react-native-reanimated';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
 
   const backgroundStyle = {
-    backgroundColor: isDarkMode ? Colors.darker : Colors.lighter,
+    backgroundColor: isDarkMode ? 'black' : 'white',
   };
 
+  const {width: deviceWidth} = useWindowDimensions();
+
+  const widthValue = useSharedValue(100);
+
+  const onIncrease = useCallback(() => {
+    widthValue.value = Math.min(widthValue.value + 20, deviceWidth);
+  }, [widthValue, deviceWidth]);
+
+  const onDecrease = useCallback(() => {
+    widthValue.value = Math.max(100, widthValue.value - 20);
+  }, [widthValue]);
+
   return (
-    <SafeAreaView style={backgroundStyle}>
+    <SafeAreaView style={[backgroundStyle, styles.root]}>
       <StatusBar
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <ScrollView
-        contentInsetAdjustmentBehavior="automatic"
-        style={backgroundStyle}>
-        <Header />
-        <View
-          style={{
-            backgroundColor: isDarkMode ? Colors.black : Colors.white,
-          }}>
-          <Section title="Step One">
-            Edit <Text style={styles.highlight}>App.tsx</Text> to change this
-            screen and then come back to see your edits.
-          </Section>
-          <Section title="See Your Changes">
-            <ReloadInstructions />
-          </Section>
-          <Section title="Debug">
-            <DebugInstructions />
-          </Section>
-          <Section title="Learn More">
-            Read the docs to discover what to do next:
-          </Section>
-          <LearnMoreLinks />
-        </View>
-      </ScrollView>
+      <View style={styles.main}>
+        <Animated.View style={[styles.box, {width: widthValue}]} />
+        <Button title="Increase" onPress={onIncrease} />
+        <Button title="Decrease" onPress={onDecrease} />
+      </View>
     </SafeAreaView>
   );
 }
 
+export default App;
+
 const styles = StyleSheet.create({
-  sectionContainer: {
-    marginTop: 32,
-    paddingHorizontal: 24,
+  main: {
+    paddingVertical: 12,
+    paddingHorizontal: 20,
+    alignItems: 'center',
   },
-  sectionTitle: {
-    fontSize: 24,
-    fontWeight: '600',
+  root: {
+    flex: 1,
   },
-  sectionDescription: {
-    marginTop: 8,
-    fontSize: 18,
-    fontWeight: '400',
-  },
-  highlight: {
-    fontWeight: '700',
+  box: {
+    height: 100,
+    borderRadius: 12,
+    backgroundColor: 'fuchsia',
+    margin: 12,
   },
 });
-
-export default App;
