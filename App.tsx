@@ -23,6 +23,7 @@ import Animated, {
   useAnimatedStyle,
   useSharedValue,
   withClamp,
+  withDelay,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -51,9 +52,16 @@ function App(): React.JSX.Element {
         duration: 500,
         easing: Easing.exp,
       }),
-      backgroundColor: withTiming(
-        interpolateColor(widthValue.value, [100, deviceWidth], ['blue', 'red']),
-        {duration: 1000},
+      backgroundColor: withDelay(
+        500,
+        withTiming(
+          interpolateColor(
+            widthValue.value,
+            [100, deviceWidth],
+            ['blue', 'red'],
+          ),
+          {duration: 1000},
+        ),
       ),
     };
   });
