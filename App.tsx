@@ -16,12 +16,14 @@ import {
   useWindowDimensions,
 } from 'react-native';
 import Animated, {
+  Easing,
   FadeIn,
   FadeInUp,
   FadeOut,
   FadeOutDown,
   interpolate,
   interpolateColor,
+  LinearTransition,
   useAnimatedRef,
   useAnimatedStyle,
   useDerivedValue,
@@ -41,17 +43,20 @@ function App(): React.JSX.Element {
 
   return (
     <SafeAreaView style={[backgroundStyle, styles.root]}>
-      <Button
-        onPress={useCallback(() => setVisible(value => !value), [])}
-        title="Toggle"
-      />
-      {visible ? (
-        <Animated.View
-          entering={FadeInUp.duration(500)}
-          exiting={FadeOutDown.duration(2000)}
-          style={styles.box}
+      <Animated.View
+        layout={LinearTransition.duration(500).easing(Easing.elastic(5))}>
+        <Button
+          onPress={useCallback(() => setVisible(value => !value), [])}
+          title="Toggle"
         />
-      ) : null}
+        {visible ? (
+          <Animated.View
+            entering={FadeInUp.duration(500)}
+            exiting={FadeOutDown.duration(2000)}
+            style={styles.box}
+          />
+        ) : null}
+      </Animated.View>
     </SafeAreaView>
   );
 }
