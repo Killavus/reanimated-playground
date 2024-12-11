@@ -21,15 +21,20 @@ import Animated, {
   Easing,
   interpolate,
   interpolateColor,
+  useAnimatedRef,
   useAnimatedStyle,
+  useDerivedValue,
   useFrameCallback,
+  useScrollViewOffset,
   useSharedValue,
   withClamp,
   withDelay,
   withRepeat,
   withSequence,
+  withSpring,
   withTiming,
 } from 'react-native-reanimated';
+import {LoremIpsum} from './LoremIpsum';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -38,26 +43,28 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? 'black' : 'white',
   };
 
-  const dotOne = useAnimatedStyle(() => {
-    return {
-      opacity: withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
-    };
-  });
+  const scrollViewRef = useAnimatedRef<Animated.ScrollView>();
 
-  const dotTwo = useAnimatedStyle(() => {
+  const scrollViewOffset = useScrollViewOffset(scrollViewRef);
+
+  const {height: deviceHeight} = useWindowDimensions();
+
+  const scrollAnimProgress = useDerivedValue(() => {
+    return withSpring(interpolate(scrollViewOffset.value, [0, 200], [0, 1]));
+  }, []);
+
+  const headerAnimation = useAnimatedStyle(() => {
     return {
-      opacity: withDelay(
-        150,
-        withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
+      height: interpolate(
+        scrollAnimProgress.value,
+        [0, 1],
+        [deviceHeight * 0.2, 50],
+        'clamp',
       ),
-    };
-  });
-
-  const dotThree = useAnimatedStyle(() => {
-    return {
-      opacity: withDelay(
-        300,
-        withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
+      backgroundColor: interpolateColor(
+        scrollAnimProgress.value,
+        [0, 1],
+        ['black', 'darkred'],
       ),
     };
   });
@@ -68,13 +75,14 @@ function App(): React.JSX.Element {
         barStyle={isDarkMode ? 'light-content' : 'dark-content'}
         backgroundColor={backgroundStyle.backgroundColor}
       />
-      <View style={styles.main}>
-        <View style={styles.dotBox}>
-          <Animated.View style={[styles.dot, dotOne]} />
-          <Animated.View style={[styles.dot, dotTwo]} />
-          <Animated.View style={[styles.dot, dotThree]} />
-        </View>
-      </View>
+      <Animated.View style={[styles.header, headerAnimation]}>
+        <Text style={[styles.headerText]}>Header Text</Text>
+      </Animated.View>
+      <Animated.ScrollView
+        ref={scrollViewRef}
+        contentContainerStyle={styles.main}>
+        <LoremIpsum />
+      </Animated.ScrollView>
     </SafeAreaView>
   );
 }
@@ -85,26 +93,22 @@ const styles = StyleSheet.create({
   main: {
     paddingVertical: 12,
     paddingHorizontal: 20,
-    alignItems: 'center',
   },
   root: {
     flex: 1,
     justifyContent: 'center',
   },
-  box: {
-    height: 100,
-    borderRadius: 12,
-    backgroundColor: 'fuchsia',
-    margin: 12,
+  header: {
+    height: '20%',
+    alignSelf: 'stretch',
+    justifyContent: 'flex-end',
+    paddingVertical: 8,
+    paddingHorizontal: 10,
+    backgroundColor: 'black',
   },
-  dot: {
-    width: 20,
-    height: 20,
-    borderRadius: 10,
-    backgroundColor: 'gray',
-  },
-  dotBox: {
-    flexDirection: 'row',
-    gap: 10,
+  headerText: {
+    color: 'white',
+    fontSize: 24,
+    fontWeight: 'bold',
   },
 });
