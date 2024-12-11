@@ -24,6 +24,8 @@ import Animated, {
   useSharedValue,
   withClamp,
   withDelay,
+  withRepeat,
+  withSequence,
   withTiming,
 } from 'react-native-reanimated';
 
@@ -47,21 +49,25 @@ function App(): React.JSX.Element {
   }, [widthValue]);
 
   const boxAnimation = useAnimatedStyle(() => {
+    const boxColor = interpolateColor(
+      widthValue.value,
+      [100, deviceWidth],
+      ['blue', 'red'],
+    );
+
     return {
       width: withTiming(widthValue.value, {
         duration: 500,
         easing: Easing.exp,
       }),
-      backgroundColor: withDelay(
-        500,
-        withTiming(
-          interpolateColor(
-            widthValue.value,
-            [100, deviceWidth],
-            ['blue', 'red'],
-          ),
-          {duration: 1000},
+      backgroundColor: withSequence(
+        withTiming(boxColor, {duration: 1000}),
+        withRepeat(
+          withTiming(interpolateColor(1, [0, 1], [boxColor, 'black'])),
+          3,
+          true,
         ),
+        withTiming(boxColor),
       ),
     };
   });
