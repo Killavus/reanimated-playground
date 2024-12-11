@@ -18,6 +18,7 @@ import {
   View,
 } from 'react-native';
 import Animated, {
+  Easing,
   interpolateColor,
   useAnimatedStyle,
   useSharedValue,
@@ -37,18 +38,22 @@ function App(): React.JSX.Element {
   const widthValue = useSharedValue(100);
 
   const onIncrease = useCallback(() => {
-    widthValue.value = Math.min(widthValue.value + 20, deviceWidth);
+    widthValue.value = Math.min(widthValue.value + 60, deviceWidth);
   }, [widthValue, deviceWidth]);
 
   const onDecrease = useCallback(() => {
-    widthValue.value = Math.max(100, widthValue.value - 20);
+    widthValue.value = Math.max(100, widthValue.value - 60);
   }, [widthValue]);
 
   const boxAnimation = useAnimatedStyle(() => {
     return {
-      width: withTiming(widthValue.value),
+      width: withTiming(widthValue.value, {
+        duration: 500,
+        easing: Easing.exp,
+      }),
       backgroundColor: withTiming(
         interpolateColor(widthValue.value, [100, deviceWidth], ['blue', 'red']),
+        {duration: 1000},
       ),
     };
   });
