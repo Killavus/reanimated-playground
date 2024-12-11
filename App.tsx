@@ -17,7 +17,13 @@ import {
   useWindowDimensions,
   View,
 } from 'react-native';
-import Animated, {useSharedValue} from 'react-native-reanimated';
+import Animated, {
+  interpolateColor,
+  useAnimatedStyle,
+  useSharedValue,
+  withClamp,
+  withTiming,
+} from 'react-native-reanimated';
 
 function App(): React.JSX.Element {
   const isDarkMode = useColorScheme() === 'dark';
@@ -38,6 +44,15 @@ function App(): React.JSX.Element {
     widthValue.value = Math.max(100, widthValue.value - 20);
   }, [widthValue]);
 
+  const boxAnimation = useAnimatedStyle(() => {
+    return {
+      width: withTiming(widthValue.value),
+      backgroundColor: withTiming(
+        interpolateColor(widthValue.value, [100, deviceWidth], ['blue', 'red']),
+      ),
+    };
+  });
+
   return (
     <SafeAreaView style={[backgroundStyle, styles.root]}>
       <StatusBar
@@ -45,7 +60,7 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <View style={styles.main}>
-        <Animated.View style={[styles.box, {width: widthValue}]} />
+        <Animated.View style={[styles.box, boxAnimation]} />
         <Button title="Increase" onPress={onIncrease} />
         <Button title="Decrease" onPress={onDecrease} />
       </View>
