@@ -19,8 +19,10 @@ import {
 } from 'react-native';
 import Animated, {
   Easing,
+  interpolate,
   interpolateColor,
   useAnimatedStyle,
+  useFrameCallback,
   useSharedValue,
   withClamp,
   withDelay,
@@ -36,38 +38,26 @@ function App(): React.JSX.Element {
     backgroundColor: isDarkMode ? 'black' : 'white',
   };
 
-  const {width: deviceWidth} = useWindowDimensions();
-
-  const widthValue = useSharedValue(100);
-
-  const onIncrease = useCallback(() => {
-    widthValue.value = Math.min(widthValue.value + 60, deviceWidth);
-  }, [widthValue, deviceWidth]);
-
-  const onDecrease = useCallback(() => {
-    widthValue.value = Math.max(100, widthValue.value - 60);
-  }, [widthValue]);
-
-  const boxAnimation = useAnimatedStyle(() => {
-    const boxColor = interpolateColor(
-      widthValue.value,
-      [100, deviceWidth],
-      ['blue', 'red'],
-    );
-
+  const dotOne = useAnimatedStyle(() => {
     return {
-      width: withTiming(widthValue.value, {
-        duration: 500,
-        easing: Easing.exp,
-      }),
-      backgroundColor: withSequence(
-        withTiming(boxColor, {duration: 1000}),
-        withRepeat(
-          withTiming(interpolateColor(1, [0, 1], [boxColor, 'black'])),
-          3,
-          true,
-        ),
-        withTiming(boxColor),
+      opacity: withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
+    };
+  });
+
+  const dotTwo = useAnimatedStyle(() => {
+    return {
+      opacity: withDelay(
+        150,
+        withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
+      ),
+    };
+  });
+
+  const dotThree = useAnimatedStyle(() => {
+    return {
+      opacity: withDelay(
+        300,
+        withRepeat(withSequence(withTiming(1), withTiming(0.66)), 0),
       ),
     };
   });
@@ -79,9 +69,11 @@ function App(): React.JSX.Element {
         backgroundColor={backgroundStyle.backgroundColor}
       />
       <View style={styles.main}>
-        <Animated.View style={[styles.box, boxAnimation]} />
-        <Button title="Increase" onPress={onIncrease} />
-        <Button title="Decrease" onPress={onDecrease} />
+        <View style={styles.dotBox}>
+          <Animated.View style={[styles.dot, dotOne]} />
+          <Animated.View style={[styles.dot, dotTwo]} />
+          <Animated.View style={[styles.dot, dotThree]} />
+        </View>
       </View>
     </SafeAreaView>
   );
@@ -97,11 +89,22 @@ const styles = StyleSheet.create({
   },
   root: {
     flex: 1,
+    justifyContent: 'center',
   },
   box: {
     height: 100,
     borderRadius: 12,
     backgroundColor: 'fuchsia',
     margin: 12,
+  },
+  dot: {
+    width: 20,
+    height: 20,
+    borderRadius: 10,
+    backgroundColor: 'gray',
+  },
+  dotBox: {
+    flexDirection: 'row',
+    gap: 10,
   },
 });
